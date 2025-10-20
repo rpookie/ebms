@@ -8,8 +8,8 @@ include 'db.php';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to eBMS</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Tomorrow:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* Reset and base styles */
     * {
@@ -26,11 +26,76 @@ include 'db.php';
         min-height: 100vh;
     }
 
+    /* Custom Header Styles */
+    .custom-header {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        height: 70px;
+    }
+
+    .custom-header .logo {
+        font-family: 'Titan One', cursive;
+        font-size: 1.8em;
+        font-weight: bold;
+    }
+
+    .custom-header .nav-links {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .custom-header .nav-link {
+        color: white;
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        background: rgba(255,255,255,0.2);
+        transition: background 0.3s;
+        font-family: 'Tomorrow', sans-serif;
+        font-weight: 500;
+    }
+
+    .custom-header .nav-link:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+    }
+
+    .custom-header .nav-link i {
+        margin-right: 5px;
+    }
+
+    .menu-toggle {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5em;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: background 0.3s;
+        display: none;
+    }
+
+    .menu-toggle:hover {
+        background: rgba(255,255,255,0.1);
+    }
+
     /* Main content area */
     .main-content {
-        padding: 80px 20px 60px 20px;
+        padding: 100px 20px 60px 20px;
         min-height: 100vh;
-        background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
+        background: linear-gradient(135deg, #2c3e50, #34495e);
         transition: margin-left 0.3s ease;
         width: 100%;
     }
@@ -180,8 +245,38 @@ include 'db.php';
 
     /* Mobile responsive */
     @media (max-width: 768px) {
+        .custom-header {
+            padding: 10px 15px;
+            height: 60px;
+        }
+        
+        .custom-header .nav-links {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            flex-direction: column;
+            padding: 20px;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .custom-header .nav-links.active {
+            display: flex;
+        }
+        
+        .menu-toggle {
+            display: block;
+        }
+        
+        .custom-header .logo {
+            font-size: 1.5em;
+        }
+        
         .main-content {
-            padding: 70px 15px 50px 15px;
+            padding: 80px 15px 50px 15px;
         }
         
         .welcome-section {
@@ -209,7 +304,25 @@ include 'db.php';
   </style>
 </head>
 <body>
-  <?php include 'index-header.php'; ?>
+  <!-- Custom Header for Index Page -->
+  <header class="custom-header">
+    <a href="index.php" class="nav-link">
+        <i class="bi bi-house"></i>Home
+    </a>
+    <div class="logo">eBMS</div>
+    <div class="nav-links" id="navLinks">
+        <a href="rooms.php" class="nav-link">
+            <i class="fas fa-bed"></i> Rooms
+        </a>
+        <a href="about.php" class="nav-link">
+            <i class="fas fa-info-circle"></i> About Us
+        </a>
+        <a href="login.php" class="nav-link">
+            <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+    </div>
+  </header>
+
 
   <div class="main-content" id="mainContent">
     <section class="welcome-section">
@@ -248,38 +361,79 @@ include 'db.php';
     </div>
   </div>
 
-  <?php include 'index-footer.php'; ?>
-
   <script>
     function viewRoomDetails(roomNumber) {
       window.location.href = 'room-detail.php?room=' + roomNumber;
     }
 
-    // Adjust main content when sidebar opens/closes
-    function adjustMainContent() {
-      const sidebar = document.getElementById("sidebar");
-      const mainContent = document.getElementById("mainContent");
+    // Mobile menu functionality
+    function toggleMobileMenu() {
+      const navLinks = document.getElementById("navLinks");
+      navLinks.classList.toggle("active");
+    }
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const navLinks = document.getElementById("navLinks");
+      const menuToggle = document.querySelector('.menu-toggle');
       
-      if (sidebar && mainContent) {
-        if (sidebar.classList.contains("active") && window.innerWidth > 768) {
-          mainContent.style.marginLeft = "250px";
-          mainContent.style.width = "calc(100% - 250px)";
-        } else {
-          mainContent.style.marginLeft = "0";
-          mainContent.style.width = "100%";
+      if (window.innerWidth <= 768 && navLinks && menuToggle) {
+        if (!menuToggle.contains(event.target) && !navLinks.contains(event.target)) {
+          navLinks.classList.remove('active');
+        }
+      }
+    });
+
+    // Close mobile menu on window resize
+    window.addEventListener('resize', function() {
+      const navLinks = document.getElementById("navLinks");
+      if (window.innerWidth > 768 && navLinks) {
+        navLinks.classList.remove('active');
+      }
+    });
+
+    // Sidebar functionality (if you still want to keep it)
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebarOverlay");
+      
+      if (sidebar) {
+        sidebar.classList.toggle("active");
+        if (overlay) overlay.classList.toggle("active");
+        
+        // Adjust main content margin
+        if (window.innerWidth > 768) {
+          if (sidebar.classList.contains("active")) {
+            document.getElementById("mainContent").style.marginLeft = "250px";
+          } else {
+            document.getElementById("mainContent").style.marginLeft = "0";
+          }
         }
       }
     }
 
-    // Call adjustMainContent when sidebar state changes
-    const sidebar = document.getElementById("sidebar");
-    if (sidebar) {
-      sidebar.addEventListener('transitionend', adjustMainContent);
-    }
+    // Adjust layout on window resize
+    window.addEventListener('resize', function() {
+      const sidebar = document.getElementById("sidebar");
+      const mainContent = document.getElementById("mainContent");
+      
+      if (window.innerWidth <= 768) {
+        mainContent.style.marginLeft = "0";
+      } else if (sidebar && sidebar.classList.contains("active")) {
+        mainContent.style.marginLeft = "250px";
+      }
+    });
 
     // Initial adjustment
-    document.addEventListener('DOMContentLoaded', adjustMainContent);
-    window.addEventListener('resize', adjustMainContent);
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById("sidebar");
+      const mainContent = document.getElementById("mainContent");
+      
+      if (window.innerWidth > 768 && sidebar && sidebar.classList.contains("active")) {
+        mainContent.style.marginLeft = "250px";
+      }
+    });
   </script>
+  <?php include 'footer.php'; ?> 
 </body>
 </html>
